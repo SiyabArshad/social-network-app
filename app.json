@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFFF"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -28,6 +28,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": " Allow Access to FIYR app to accesses your photos to let you share them with your friends.",
+          "cameraPermission": " Allow Access to FIYR app to accesses your photos to let you share them with your friends."
+        }
+      ]
+    ]
   }
 }
