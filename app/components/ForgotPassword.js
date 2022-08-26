@@ -1,12 +1,24 @@
 import * as React from 'react'
-import { View, Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity } from 'react-native'
+import { View, Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity,ActivityIndicator } from 'react-native'
 import {useTheme} from "@react-navigation/native"
 import * as yup from 'yup';
 import { Formik, Field } from 'formik'
 import {RFPercentage,RFValue} from "react-native-responsive-fontsize"
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import app from "../../firebase"
+import {createUserWithEmailAndPassword,getAuth,deleteUser,updateProfile,sendEmailVerification,sendPasswordResetEmail,signInWithEmailAndPassword} from "firebase/auth"
+import {doc,setDoc,getFirestore, addDoc, getDoc,serverTimestamp} from "firebase/firestore"
+import { ref,getDownloadURL,getStorage, uploadBytes  } from "firebase/storage"
+import { useSelector,useDispatch } from 'react-redux';
+import Toast from 'react-native-root-toast'
+
 export default function ForgotPassword() {
     const {colors}=useTheme()
+    const auth=getAuth(app)
+  const db=getFirestore(app)
+  const dispatch = useDispatch();
+  const [loading,setloading]=React.useState(false)
+  
     //schema for forgot frontend validation
     const emailValidationSchema = yup.object().shape({
       email: yup
@@ -17,15 +29,41 @@ export default function ForgotPassword() {
     //ends yup
    //function for forgot
          const forgotfunction=async(values)=>{
-          //code
+          const{email}=values
+          setloading(true)
           try{
-
+              await sendPasswordResetEmail(auth,email)
+              let toast = Toast.show("Password Recovery email sent", {
+                duration: Toast.durations.LONG,
+              });
+              setTimeout(function hideToast() {
+                Toast.hide(toast);
+              }, 1000);
+              setloading(false)  
           }
-          catch{
-
+          catch(e){
+            let toast = Toast.show(e.message, {
+              duration: Toast.durations.LONG,
+            });
+            setTimeout(function hideToast() {
+              Toast.hide(toast);
+            }, 1000);
+            setloading(false)
           }
          }
-   //ends signin function
+   //ends  function
+
+   if(loading)
+   {
+       return(
+        <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+            <ActivityIndicator color={colors.primary} size="large"></ActivityIndicator>
+        </View>
+       )
+   }
+   else
+   {
+   
     return (
       <Formik
         initialValues={{
@@ -64,6 +102,7 @@ export default function ForgotPassword() {
         )}
       </Formik>
   )
+            }
 }
 
 

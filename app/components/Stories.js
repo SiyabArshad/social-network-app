@@ -4,9 +4,9 @@ import {RFValue,RFPercentage} from "react-native-responsive-fontsize"
 import {useTheme} from "@react-navigation/native"
 
 
-export default function Stories({navigation}) {
+export default function Stories({navigation,stories}) {
 const{colors}=useTheme()
-  const storiesarray=[1,2,3,4,5,7,8,89,9,6]
+  
     return (
     <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} horizontal={true}>
         <View
@@ -16,8 +16,8 @@ const{colors}=useTheme()
         }}
         >
         {
-            storiesarray.map((item,i)=>(
-                <TouchableOpacity key={i} onPress={()=>navigation.navigate("story")}>
+            stories?.map((item,i)=>(
+                <TouchableOpacity key={i} onPress={()=>navigation.navigate("story",{storydata:item})}>
                 <Image
                 resizeMode='stretch'
                   style={{
@@ -26,7 +26,7 @@ const{colors}=useTheme()
                     borderRadius:RFPercentage(4),
                     marginRight:RFPercentage(1)
                   }}
-                  source={require("../../assets/profile.jpeg")}
+                  source={{uri:item?.profile}}
                   />
                   </TouchableOpacity>
                 ))

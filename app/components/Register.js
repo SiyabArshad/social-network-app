@@ -1,11 +1,19 @@
 import * as React from 'react'
-import { View, KeyboardAvoidingView,Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity } from 'react-native'
+import { View, KeyboardAvoidingView,Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity,ActivityIndicator } from 'react-native'
 import {useTheme} from "@react-navigation/native"
 import * as yup from 'yup';
 import { Formik, Field } from 'formik'
 import {RFPercentage,RFValue} from "react-native-responsive-fontsize"
 import { AntDesign } from '@expo/vector-icons';
-export default function Register() {
+import app from "../../firebase"
+import {createUserWithEmailAndPassword,getAuth,deleteUser,updateProfile,sendEmailVerification, signOut} from "firebase/auth"
+import {doc,setDoc,getFirestore, addDoc, serverTimestamp} from "firebase/firestore"
+import { ref,getDownloadURL,getStorage, uploadBytes  } from "firebase/storage"
+import Toast from 'react-native-root-toast'
+export default function Register({navigation}) {
+  const auth=getAuth(app)
+  const db=getFirestore(app)
+  const [loading,setloading]=React.useState(false)
     const {colors}=useTheme()
     //schema for signup frontend validation
     const signUpValidationSchema = yup.object().shape({
@@ -29,15 +37,63 @@ export default function Register() {
     //ends yup
    //function for signup
          const registration=async(values)=>{
-          //code
+          const{email,password,fullName}=values
+          setloading(true)
           try{
-
-          }
-          catch{
-
+             const useradded= await createUserWithEmailAndPassword(auth,email,password)
+              await setDoc(doc(db,"users",useradded.user.uid),{
+                userid:useradded.user.uid,
+                username:fullName,
+                email:email,
+                active:true,
+                ispublic:true,
+                timestamp:serverTimestamp()
+              })
+              await setDoc(doc(db,"reports",useradded.user.uid),{
+                userid:useradded.user.uid,
+                blockusers:[],
+                timestamp:serverTimestamp()
+              })
+              await setDoc(doc(db,"following",useradded.user.uid),{
+                userid:useradded.user.uid,
+                followings:[],
+                timestamp:serverTimestamp()
+              })
+              await setDoc(doc(db,"followers",useradded.user.uid),{
+                userid:useradded.user.uid,
+                followers:[],
+                timestamp:serverTimestamp()
+              })
+              let toast = Toast.show("Signup done", {
+                duration: Toast.durations.LONG,
+              });
+              setTimeout(function hideToast() {
+                Toast.hide(toast);
+              }, 1000);
+              setloading(false)
+            }
+            
+          catch(e){
+            let toast = Toast.show(e.message, {
+              duration: Toast.durations.LONG,
+            });
+            setTimeout(function hideToast() {
+              Toast.hide(toast);
+            }, 1000);
+            setloading(false)
           }
          }
    //ends signup function
+   if(loading)
+   {
+       return(
+        <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+            <ActivityIndicator color={colors.primary} size="large"></ActivityIndicator>
+        </View>
+       )
+   }
+   else
+   {
     return (
       <Formik
         initialValues={{
@@ -86,9 +142,10 @@ export default function Register() {
               </TouchableOpacity>
           </>
         )}
-        
       </Formik>
+      
   )
+      }
 }
 
 

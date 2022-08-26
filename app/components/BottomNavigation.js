@@ -5,8 +5,17 @@ import {useTheme} from "@react-navigation/native"
 const heightdevice=Dimensions.get('window').height
 import { AntDesign,Feather,Entypo,Ionicons,SimpleLineIcons,Foundation,EvilIcons,FontAwesome5,MaterialIcons } from '@expo/vector-icons';
 import { Video, AVPlaybackStatus } from 'expo-av';
+import app from "../../firebase"
+import {createUserWithEmailAndPassword,getAuth,deleteUser,updateProfile,sendEmailVerification,signInWithEmailAndPassword} from "firebase/auth"
+import {doc,setDoc,getFirestore, addDoc, getDoc,serverTimestamp} from "firebase/firestore"
+import { ref,getDownloadURL,getStorage, uploadBytes  } from "firebase/storage"
+import { useSelector,useDispatch } from 'react-redux';
+import Toast from 'react-native-root-toast'
 
 export default function BottomNavigation({navigation}) {
+    const auth=getAuth(app)
+  const db=getFirestore(app)
+  
     const{colors}=useTheme()
     return (
     <View style={{
@@ -79,7 +88,7 @@ export default function BottomNavigation({navigation}) {
         }}
         >
         <TouchableOpacity
-             onPress={()=>navigation.navigate("notifications")}
+             onPress={()=>navigation.navigate("setting")}
         style={{
             display:"flex",
             justifyContent:"center",
@@ -87,7 +96,7 @@ export default function BottomNavigation({navigation}) {
             marginRight:RFPercentage(4)
         }}
         >
-        <MaterialIcons name="notifications-none" size={30} color={colors.primary} />
+        <MaterialIcons name="settings" size={30} color={colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity
         style={{
@@ -95,7 +104,7 @@ export default function BottomNavigation({navigation}) {
             justifyContent:"center",
             alignItems:"center"
         }}
-        onPress={()=>navigation.navigate("profile")}
+        onPress={()=>navigation.navigate("profile",{userid:auth.currentUser.uid})}
         >
         <AntDesign name="user" size={30} color={colors.primary} />
         </TouchableOpacity>

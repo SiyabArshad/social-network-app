@@ -1,11 +1,22 @@
 import * as React from 'react'
-import { View, Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity } from 'react-native'
+import { View, Text,StyleSheet,TextInput,SafeAreaView,Button,TouchableOpacity,ActivityIndicator } from 'react-native'
 import {useTheme} from "@react-navigation/native"
 import * as yup from 'yup';
 import { Formik, Field } from 'formik'
 import {RFPercentage,RFValue} from "react-native-responsive-fontsize"
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import app from "../../firebase"
+import {createUserWithEmailAndPassword,getAuth,deleteUser,updateProfile,sendEmailVerification,signInWithEmailAndPassword} from "firebase/auth"
+import {doc,setDoc,getFirestore, addDoc, getDoc,serverTimestamp} from "firebase/firestore"
+import { ref,getDownloadURL,getStorage, uploadBytes  } from "firebase/storage"
+import { useSelector,useDispatch } from 'react-redux';
+import Toast from 'react-native-root-toast'
+import {loginuser} from "../redux/action"
+
 export default function Signin() {
+  const auth=getAuth(app)
+  const db=getFirestore(app)
+  const dispatch = useDispatch();
+  const [loading,setloading]=React.useState(false)
     const {colors}=useTheme()
     //schema for signin frontend validation
     const signInValidationSchema = yup.object().shape({
@@ -21,15 +32,75 @@ export default function Signin() {
     //ends yup
    //function for signin
          const loginfunction=async(values)=>{
-          //code
+          setloading(true)
+          const{email,password}=values
           try{
+            const userlogin= await signInWithEmailAndPassword(auth,email,password)
+            const docRef = doc(db, "users", userlogin.user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                    //login action call
+                    const userdata=docSnap.data()
+                    if(userdata?.active===true)
+                    {
+                      await dispatch(loginuser(userdata))
+                      let toast = Toast.show("Login Successfully", {
+                        duration: Toast.durations.LONG,
+                      });
+                      setTimeout(function hideToast() {
+                        Toast.hide(toast);
+                        //navigation.navigate("signin")
+                      }, 2000);
+                      setloading(false)
+                    }
+                    else
+                    {
+                      let toast = Toast.show("Your Account is Deactivated", {
+                        duration: Toast.durations.LONG,
+                      });
+                      setTimeout(function hideToast() {
+                        Toast.hide(toast);
+                        //navigation.navigate("signin")
+                      }, 2000);
+                      setloading(false)
+                    }
+                               
+                  } 
+        else {
+          let toast = Toast.show("Login Failed", {
+            duration: Toast.durations.LONG,
+          });
+          setTimeout(function hideToast() {
+            Toast.hide(toast);
+            //navigation.navigate("signin")
+          }, 2000);
+              setloading(false)      
+            }
+             
+           }
+         catch(e){
+           let toast = Toast.show(e.message, {
+             duration: Toast.durations.LONG,
+           });
+           setTimeout(function hideToast() {
+             Toast.hide(toast);
+           }, 1000);
+           setloading(false)
+         }
 
-          }
-          catch{
-
-          }
          }
    //ends signin function
+   if(loading)
+   {
+       return(
+        <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+            <ActivityIndicator color={colors.primary} size="large"></ActivityIndicator>
+        </View>
+       )
+   }
+   else
+   {
+   
     return (
       <Formik
         initialValues={{
@@ -75,6 +146,7 @@ export default function Signin() {
         )}
       </Formik>
   )
+            }
 }
 
 

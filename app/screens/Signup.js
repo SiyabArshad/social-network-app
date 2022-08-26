@@ -1,12 +1,16 @@
 import * as React from 'react'
-import { View, Text,StyleSheet,Image,TouchableOpacity,Platform,ScrollView,KeyboardAvoidingView} from 'react-native'
+import { View, Text,StyleSheet,Image,TouchableOpacity,Keyboard,Platform,ScrollView,KeyboardAvoidingView} from 'react-native'
 import {useTheme} from "@react-navigation/native"
 import Register from '../components/Register'
 import {RFValue,RFPercentage} from "react-native-responsive-fontsize"
+import app from "../../firebase"
+import {createUserWithEmailAndPassword,getAuth,deleteUser,updateProfile,sendEmailVerification} from "firebase/auth"
+import {doc,setDoc,getFirestore, addDoc, serverTimestamp} from "firebase/firestore"
+import { ref,getDownloadURL,getStorage, uploadBytes  } from "firebase/storage"
+
 export default function Signup({navigation}) {
   const {colors}=useTheme()
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
-
   React.useEffect(() => {
      const keyboardDidShowListener = Keyboard.addListener(
        'keyboardDidShow',
@@ -32,7 +36,7 @@ export default function Signup({navigation}) {
       position:"relative",
       backgroundColor:colors.white
     }}>
-     <KeyboardAvoidingView  style={{flex:1,marginBottom:isKeyboardVisible&&RFPercentage(2)}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+     <KeyboardAvoidingView  style={{flex:1,marginBottom:isKeyboardVisible?RFPercentage(2):0}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <Image style={{height:"40%",width:"100%"}} source={require("../../assets/mnbg.png")}></Image>
    
      <View style={{width:"100%",position:'absolute',display:"flex",alignItems:"center"
@@ -62,7 +66,7 @@ export default function Signup({navigation}) {
         }}
         >
   
-          <Register></Register>
+          <Register navigation={navigation}></Register>
   
           <TouchableOpacity style={{
             display:'flex',

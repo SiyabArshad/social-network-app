@@ -1,6 +1,7 @@
+import * as React from "react"
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-gesture-handler';
-import { StyleSheet, Text, View,useColorScheme } from 'react-native';
+import { StyleSheet, Text, View,useColorScheme,ActivityIndicator } from 'react-native';
 import {NavigationContainer,DefaultTheme,DarkTheme} from "@react-navigation/native"
 import {createStackNavigator} from "@react-navigation/stack"
 const Stack=createStackNavigator()
@@ -9,8 +10,6 @@ import { lightcolors,darkcolors } from './app/configurations/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Login from './app/screens/Login';
 import Forgotpassword from "./app/screens/Forgotpassword"
-import ResetPassword from "./app/screens/ResetPassword"
-import Verification from "./app/screens/Verification"
 import Home from './app/screens/Home';
 import Comments from './app/screens/Comments';
 import Twitter from './app/screens/Twitter';
@@ -27,7 +26,32 @@ import Following from "./app/screens/Following"
 import Follower from "./app/screens/Follower"
 import Setting from './app/screens/Setting';
 import EditProfile from './app/screens/Editprofile';
+import { Provider } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
+import store from "./app/redux/store"
+import { Authcontext } from './app/redux/auth';
+import {Init} from "./app/redux/action"
+import * as Notifications from 'expo-notifications';
+import { LogBox } from 'react-native';
+
 export default function App() {
+  LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+  return (
+  <Provider store={store}>
+    <AppWapper></AppWapper>
+  </Provider>  
+  );
+}
+export const AppWapper=()=>
+{
   const LightTheme={
     ...DefaultTheme,
     colors:{
@@ -57,12 +81,44 @@ export default function App() {
     }
   }
   const scheme=useColorScheme()
+  const [loading,setloading]=React.useState(true)
+
+  const userinfo = useSelector(state => state.Reducers.user);
+  const {user}=Authcontext()
   console.log(scheme)
-  return (
-    <>
-      <NavigationContainer   theme={scheme==='dark'?NightTheme:LightTheme}>
-        <StatusBar></StatusBar>
-        <Stack.Navigator   screenOptions={{headerShown:false}}>
+  const dispatch = useDispatch();
+  const init = async () => {
+    await dispatch(Init());
+    setloading(false);
+  }
+  const controller=new AbortController()
+  React.useEffect(() => {
+    init()
+    return ()=>{
+      controller.abort()
+    }
+  }, [])
+if(loading)
+{
+  return(
+    <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+      <ActivityIndicator color={"purple"} size="large"></ActivityIndicator>
+    </View>
+  )
+}
+else
+{
+return (
+ <NavigationContainer   theme={scheme==='dark'?NightTheme:LightTheme}>
+  <StatusBar></StatusBar>
+{user&&userinfo?<ProtectedRoutes/>:<Base/>}
+</NavigationContainer>
+)
+}
+}
+const ProtectedRoutes=()=>{
+  return(
+    <Stack.Navigator   screenOptions={{headerShown:false}}>
         <Stack.Screen name="home" component={Home}></Stack.Screen>
         <Stack.Screen name="profile" component={Profile}></Stack.Screen>
         <Stack.Screen name="edit" component={EditProfile}></Stack.Screen>
@@ -79,24 +135,18 @@ export default function App() {
         <Stack.Screen name="story" component={Story}></Stack.Screen>  
         <Stack.Screen name="comments" component={Comments}></Stack.Screen> 
         <Stack.Screen name="notifications" component={Notification}></Stack.Screen> 
-          <Stack.Screen name="signup" component={Signup}></Stack.Screen>
-          <Stack.Screen name="signin" component={Login}></Stack.Screen>
-          <Stack.Screen name="forgot" component={Forgotpassword}></Stack.Screen>
-          <Stack.Screen name="reset" component={ResetPassword}></Stack.Screen>
-          <Stack.Screen name="verify" component={Verification}></Stack.Screen>
-        
-        </Stack.Navigator>
-      </NavigationContainer>
-    </>
-
-    );
+    </Stack.Navigator>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const Base=()=>{
+  return(
+<Stack.Navigator screenOptions={{headerShown:false}}>
+<Stack.Screen name="signup" component={Signup}></Stack.Screen>
+<Stack.Screen name="signin" component={Login}></Stack.Screen>
+<Stack.Screen name="forgot" component={Forgotpassword}></Stack.Screen>
+ </Stack.Navigator> 
+  )
+}
+
+

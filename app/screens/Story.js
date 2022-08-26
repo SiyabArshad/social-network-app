@@ -7,25 +7,21 @@ import { AntDesign,Feather,Entypo,EvilIcons,FontAwesome5,MaterialIcons } from '@
 import * as ImagePicker from "expo-image-picker"
 import { Video, AVPlaybackStatus } from 'expo-av';
 
-export default function Story({navigation}) {
+export default function Story({navigation,route}) {
+    const{storydata}=route?.params
     const{colors}=useTheme()
    
   return (
-<ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} horizontal={true}>
-<View style={{display:"flex",flexDirection:"row"}}>
-
-{
-    [1,2,3].map((item,i)=>{
-            return(
+<View style={{flex:1}}>
     <ImageBackground 
-   resizeMode='cover'
+   resizeMode="stretch"
    style={{
     paddingHorizontal:RFPercentage(1),
     paddingTop:RFPercentage(5),
     height:heightdevice,
     width:Dimensions.get('window').width
 }}
-   source={require("../../assets/post1.jpeg")}
+   source={{uri:storydata?.story}}
    >
         <View
         style={{
@@ -49,7 +45,7 @@ export default function Story({navigation}) {
                 borderRadius:RFPercentage(3),
                 marginRight:RFPercentage(2)
             }}
-            source={require("../../assets/profile.jpeg")}
+            source={{uri:storydata.profile}}
             />
             </View>
             <TouchableOpacity style={{maxWidth:RFPercentage(4),margin:RFPercentage(2)}} onPress={()=>navigation.navigate("home")}>
@@ -59,12 +55,6 @@ export default function Story({navigation}) {
             
         </View>
    </ImageBackground>
-
-            )
-    })
-}
-
 </View>
-</ScrollView>
     )
 }

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { View, KeyboardAvoidingView,Text,StyleSheet,Platform,Image,TouchableOpacity,ScrollView} from 'react-native'
+import { View, KeyboardAvoidingView,Keyboard,Text,StyleSheet,Platform,Image,TouchableOpacity,ScrollView} from 'react-native'
 import {useTheme} from "@react-navigation/native"
 import Signin from '../components/Signin'
 import {RFValue,RFPercentage} from "react-native-responsive-fontsize"
@@ -33,7 +33,7 @@ export default function Login({navigation}) {
         position:"relative",
         backgroundColor:colors.white
       }}>
-       <KeyboardAvoidingView  style={{flex:1,marginBottom:isKeyboardVisible&&RFPercentage(2)}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+       <KeyboardAvoidingView  style={{flex:1,marginBottom:isKeyboardVisible?RFPercentage(2):0}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <Image style={{height:"40%",width:"100%"}} source={require("../../assets/mnbg.png")}></Image>
    
      <View style={{width:"100%",position:'absolute',display:"flex",alignItems:"center"
